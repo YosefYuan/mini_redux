@@ -1,6 +1,31 @@
-let state = {
-    color: 'blue'
+function createStore(){
+    let state = {
+        color: 'blue'
+    }
+    const getState = () => state;
+    const changeState = (action) => {
+        switch(action.type){
+            case 'CHANGE_COLOR':
+                state = {
+                    ...state,
+                    color: action.color
+                }
+                return state;
+            default:
+                return state;
+        }
+    }
+    return {
+        getState,
+        changeState
+    }
 }
+
+function renderApp(state){
+    renderHeader(state);
+    renderContent(state);
+}
+
 
 // 渲染应用
 function renderApp(state) {
@@ -19,33 +44,22 @@ function renderContent(state) {
     content.style.color = state.color;
 }
 
-renderApp(state);
-
 //点击按钮，更改字体颜色
 document.getElementById('to-blue').onclick = function () {
-    let state = changeState({
+    store.changeState({
         type:'CHANGE_COLOR',
         color:'rgb(0, 51, 254)'
-    })
-    renderApp(state);
+    });
+    renderApp(store.getState());
 }
 
 document.getElementById('to-pink').onclick = function () {
-    let state = changeState({
+    store.changeState({
         type:'CHANGE_COLOR',
         color:'rgb(247, 109, 132)'
-    })
-    renderApp(state);
+    });
+    renderApp(store.getState());
 }
 
-function changeState(action){
-    switch(action.type){
-        case 'CHANGE_COLOR':
-            return {
-                ...state,
-                color: action.color
-            }
-        default:
-            return state;
-    }
-}
+const store = createStore();
+renderApp(store.getState());
