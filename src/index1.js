@@ -1,37 +1,52 @@
-function createStore(){
-    let state = {
-        color: 'blue'
-    }
+function createStore(reducer){
+    let state;
+    let listeners = [];
     const getState = () => state;
-    const changeState = (action) => {
-        switch(action.type){
-            case 'CHANGE_COLOR':
-                state = {
-                    ...state,
-                    color: action.color
-                }
-                return state;
-            default:
-                return state;
+    const subscribe = (ln) => {
+        listeners.push(ln);
+        const unsubscribe = () => {
+            listeners = listeners.filter(listeners !== listener);
         }
-    }
+        return unsubscribe;
+    };
+    const dispatch  = (action) => {
+        state = reducer(state, action);
+        listeners.forEach(ln => ln());
+    };
+    dispatch({
+        type: '@@redux/__INIT__'
+    });
     return {
         getState,
-        changeState
+        dispatch,
+        subscribe
     }
 }
 
-function renderApp(state){
-    renderHeader(state);
-    renderContent(state);
+const initialState = {
+    color: 'blue'
 }
 
+function reducer(state=initialState, action){
+    switch(action.type){
+        case 'CHANGE_COLOR':
+            return {
+                ...state,
+                color: action.color
+            }
+        default:
+            return state;
+    }
+}
+
+const store = createStore(reducer);
 
 // 渲染应用
 function renderApp(state) {
     renderHeader(state);
     renderContent(state);
 }
+
 // 渲染title部分
 function renderHeader(state) {
     const header = document.getElementById('header');
@@ -46,20 +61,19 @@ function renderContent(state) {
 
 //点击按钮，更改字体颜色
 document.getElementById('to-blue').onclick = function () {
-    store.changeState({
+    store.dispatch({
         type:'CHANGE_COLOR',
         color:'rgb(0, 51, 254)'
     });
-    renderApp(store.getState());
 }
 
 document.getElementById('to-pink').onclick = function () {
-    store.changeState({
+    store.dispatch({
         type:'CHANGE_COLOR',
         color:'rgb(247, 109, 132)'
     });
-    renderApp(store.getState());
 }
 
-const store = createStore();
 renderApp(store.getState());
+
+store.subscribe(() => renderApp(store.getState()));
